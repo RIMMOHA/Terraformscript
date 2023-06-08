@@ -1,0 +1,133 @@
+resource "aws_vpc" "my_vpc" {
+  cidr_block = "10.0.0.0/16"
+
+  tags = {
+    Name = "my_vpc"
+  }
+}
+resource "aws_subnet" "subneta" {
+  vpc_id     = aws_vpc.my_vpc.id
+  cidr_block = "10.0.1.0/24"
+  availability_zone = "us-east-1a"
+  map_public_ip_on_launch = true
+  
+  tags = {
+    Name = "subneta"
+  }
+}
+resource "aws_subnet" "subnetb" {
+  vpc_id     = aws_vpc.my_vpc.id
+  cidr_block = "10.0.1.0/24"
+  availability_zone = "us-east-1b"
+  map_public_ip_on_launch = true
+  
+  tags = {
+    Name = "subnetb"
+  }
+}
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.my_vpc.id
+
+  tags = {
+    Name = "my_vpc"
+  }
+}
+resource "aws_route_table" "rt" {
+  vpc_id = aws_vpc.my_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id 
+
+    tags = {
+        Name = "rt"
+    }
+  }
+}
+resource "aws_route_table_association" "rta" {
+  subnet_id      = aws_subnet.subneta.id
+  route_table_id = aws_route_table.rt.id
+}
+resource "aws_route_table_association" "rtb" {
+  subnet_id      = aws_subnet.subnetb.id
+  route_table_id = aws_route_table.rt.id
+}
+resource "aws_security_group" "sg1" {
+  name        = "websg1"
+  description = "Allow HTTP traffic"
+  vpc_id      = aws_vpc.my_vpc.id
+  subnet_id      = aws_subnet.subneta.id
+
+  ingress {
+    description      = "HTTP traffic"
+    from_port        = 80
+    to_port          = 80
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "websg1"
+  }
+} 
+resource "aws_security_group" "sg2" {
+  name        = "websg2"
+  description = "Allow HTTP traffic"
+  vpc_id      = aws_vpc.my_vpc.id
+  subnet_id      = aws_subnet.subnetb.id
+
+
+  ingress {
+    description      = "HTTP traffic"
+    from_port        = 80
+    to_port          = 80
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "websg2"
+  }
+} 
+resource "aws_instance" "web1" {
+  ami           = "ami-0aa7d40eeae50c9a9"
+  instance_type = "t2.micro"
+  vpc_id      = aws_vpc.my_vpc.id
+  subnet_id      = aws_subnet.subneta.id
+  route_table_association_id = aws_route_table.rta.id
+  aws_security_group_id = aws_security_group.sg1.id
+  user_data = file(install_apache.sh)
+
+  tags = {
+    Name = "web1"
+  }
+}
+resource "aws_instance" "web2" {
+  ami           = "ami-0aa7d40eeae50c9a9"
+  instance_type = "t2.micro"
+  vpc_id      = aws_vpc.my_vpc.id
+  subnet_id      = aws_subnet.subnetb.id
+  route_table_association_id = aws_route_table.rtb.id
+  aws_security_group_id = aws_security_group.sg2.id
+  user_data = file(install_apache.sh)
+
+  tags = {
+    Name = "web2"
+  }
+}
+
+
