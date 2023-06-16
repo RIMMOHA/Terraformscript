@@ -1,0 +1,48 @@
+variable Name1 {
+    default ="my_vpc"
+}
+variable AZ1 {
+    default = "us-east-1a"
+}
+variable AZ2 {
+    default = "us-east-1b"
+}
+variable SB1 {
+    default = "subnetA"
+}
+variable SB2 {
+    default = "subnetB"
+}
+variable Name2 {
+    default = "igw"
+}
+variable Name3 {
+    default = "rt"
+}
+variable Name4 {
+    default = "rta"
+}
+variable Name5 {
+    default = "rtb"
+}
+variable sg1 {
+    default = "websg1"
+}
+variable sg2 {
+    default = "websg2"
+}
+variable ami {
+    default = "ami-0aa7d40eeae50c9a9"
+}
+variable ins_type {
+    default = "t2.micro"
+}
+variable Name6 {
+    default = "web1"
+}
+variable Name7 {
+    default = "web2"
+}
+
+
+
